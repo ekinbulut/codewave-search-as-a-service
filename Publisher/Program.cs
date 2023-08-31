@@ -2,5 +2,11 @@
 // Publisher app: Will publish message to broker
 // message will be produced from databaseadoptor
 
+using Publisher;
 
-Console.WriteLine("Hello, World!");
+var app = new Application(args);
+app.DisplayInfo();
+app.RegisterConfigs();
+app.RegisterServices();
+await app.RunAsync();
+
