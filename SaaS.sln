@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Publisher", "Publisher\Publ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticsearchAdaptor", "ElasticsearchAdaptor\ElasticsearchAdaptor.csproj", "{F2CB1D01-98DC-432C-90F4-04F5F2175E03}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Broker", "Broker\Broker.csproj", "{3EA4A822-7EB1-4C69-A586-5595FDF5384C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{F2CB1D01-98DC-432C-90F4-04F5F2175E03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2CB1D01-98DC-432C-90F4-04F5F2175E03}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2CB1D01-98DC-432C-90F4-04F5F2175E03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EA4A822-7EB1-4C69-A586-5595FDF5384C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EA4A822-7EB1-4C69-A586-5595FDF5384C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EA4A822-7EB1-4C69-A586-5595FDF5384C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EA4A822-7EB1-4C69-A586-5595FDF5384C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
