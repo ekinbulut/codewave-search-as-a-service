@@ -6,7 +6,14 @@ using Newtonsoft.Json;
 
 namespace DatabaseAdaptor;
 
-public class SqlLiteAdaptor
+public interface IAdaptor
+{
+    bool Connect();
+    string GetSchemaAndData();
+    List<Dictionary<string, object>> GetDataFromTable(string tableName);
+}
+
+public class SqlLiteAdaptor : IAdaptor
 {
     private readonly SqliteConnection _connection;
     

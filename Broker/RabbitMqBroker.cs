@@ -3,7 +3,7 @@ using RabbitMQ.Client.Events;
 
 namespace Broker;
 
-public class RabbitMqBroker
+public class RabbitMqBroker : IRabbitMqBroker
 {
     private readonly string _username;
     private readonly string _password;

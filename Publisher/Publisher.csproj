@@ -23,4 +23,9 @@
     </ItemGroup>
 
 
+    <ItemGroup>
+      <ProjectReference Include="..\Broker\Broker.csproj" />
+      <ProjectReference Include="..\DatabaseAdaptor\DatabaseAdaptor.csproj" />
+    </ItemGroup>
+
 </Project>
