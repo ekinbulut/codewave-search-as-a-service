@@ -19,6 +19,8 @@ public class RabbitMqBroker : IRabbitMqBroker
     private string? _consumerTag;
 
     private readonly IOptions<RabbitMqOptions>? _options;
+
+    public event Action<byte[]>? MessageReceived; 
     
     public RabbitMqBroker(string? username, string? password, string? virtualHost, string? hostname, int port)
     {
@@ -112,7 +114,7 @@ public class RabbitMqBroker : IRabbitMqBroker
         consumer.Received += (ch, ea) =>
         {
             var body = ea.Body.ToArray();
-            Messages.Queue.Enqueue(body);
+            MessageReceived?.Invoke(body);
             Channel?.BasicAck(ea.DeliveryTag, false);
         };
 
@@ -127,8 +129,8 @@ public class RabbitMqBroker : IRabbitMqBroker
         consumer.Received += async (ch, ea) =>
         {
             var body = ea.Body.ToArray();
-            Messages.Queue.Enqueue(body);
             Channel?.BasicAck(ea.DeliveryTag, false);
+            MessageReceived?.Invoke(body);
             await Task.Yield();
         };
         _consumerTag = Channel.BasicConsume(queue, false, consumer);

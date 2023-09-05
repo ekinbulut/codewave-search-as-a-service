@@ -8,7 +8,15 @@ public class ElasticSearchResponse
     public int Code { get; set; }
     public string? Status { get; set; }
 }
-public class ElasticSearchAdaptor
+
+public interface IElasticSearchAdaptor
+{
+    event Action<object, ElasticSearchResponse>? AdaptorResponse;
+    void ConfigureSettings(bool enableDebugMode = false, bool prettyJson = false, int minutes = 2);
+    Task IndexAsync(object data, string index);
+}
+
+public class ElasticSearchAdaptor : IElasticSearchAdaptor
 {
     private readonly IOptions<ElasticSearchOptions> _options;
     private readonly ElasticsearchClientSettings? _settings;
@@ -55,9 +63,18 @@ public class ElasticSearchAdaptor
         if (response.IsValidResponse)
         {
             AdaptorResponse?.Invoke(this, new ElasticSearchResponse(){
-                Code = 0,
+                Code = Convert.ToInt32($"{response.ApiCallDetails.HttpStatusCode}"),
                 Status = $"{index} completed"
             });
+        }
+        else
+        {
+            if (response.ElasticsearchServerError != null)
+                AdaptorResponse?.Invoke(this, new ElasticSearchResponse()
+                {
+                    Code = Convert.ToInt32($"{response.ElasticsearchServerError.Status}"),
+                    Status = $"{response.ElasticsearchServerError}"
+                });
         }
     }
 

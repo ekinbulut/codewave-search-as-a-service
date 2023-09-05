@@ -59,7 +59,7 @@ public class SqlLiteAdaptor : IAdaptor
             }
         }
         
-        return JsonConvert.SerializeObject(tablesData, Formatting.Indented);
+        return JsonConvert.SerializeObject(tablesData);
     }
 
     public List<Dictionary<string, object>> GetDataFromTable(string tableName)

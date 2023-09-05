@@ -21,7 +21,7 @@ public class ElasticSearchAdaptorTests
     {
         _sut.AdaptorResponse += (o, response) =>
         {
-            Assert.Equal(0, response.Code);
+            Assert.Equal(200, response.Code);
         };
         
         await _sut.IndexAsync(new TestIndex()

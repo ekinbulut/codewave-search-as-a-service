@@ -1,4 +1,5 @@
 using Broker;
+using ElasticsearchAdaptor;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -17,8 +18,12 @@ public class Application
     public void RegisterServices()
     {
         var mqOptions = _builder.Services.BuildServiceProvider().GetRequiredService<IOptions<RabbitMqOptions>>();
+        var esOptions = _builder.Services.BuildServiceProvider().GetRequiredService<IOptions<ElasticSearchOptions>>();
         Console.WriteLine($"MQ: ampq://{mqOptions.Value.Hostname}:{mqOptions.Value.Port}");
+        Console.WriteLine($"Elastic search URL:{esOptions.Value.Uri}");
+
         _builder.Services.AddSingleton<IRabbitMqBroker, RabbitMqBroker>();
+        _builder.Services.AddTransient<IElasticSearchAdaptor, ElasticSearchAdaptor>();
 
         _builder.Services.AddHostedService<StartupService>();
     }
@@ -31,6 +36,7 @@ public class Application
             .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
 
         _builder.Services.Configure<RabbitMqOptions>(_builder.Configuration.GetSection(nameof(RabbitMqOptions)));
+        _builder.Services.Configure<ElasticSearchOptions>(_builder.Configuration.GetSection(nameof(ElasticSearchOptions)));
 
     }
 

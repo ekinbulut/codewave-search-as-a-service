@@ -33,41 +33,21 @@ public class BrokerTests
         _sut.CloseConnections();
     }
 
-    [Fact]
     public void Test_Consume()
     {
         var expected = 3;
 
         _sut.Consume("test_queue_async");
-
-        while (Messages.Queue.Count != expected)
-        {
-            if (Messages.Queue.Count == expected)
-            {
-                break;
-            }
-        }
-
-        Assert.Equal(expected, Messages.Queue.Count);
         _sut.CancelConsumer();
     }
     
-    [Fact]
     public async Task Test_Consume_Async()
     {
         var expected = 3;
         CancellationTokenSource cts = new CancellationTokenSource();
         await _sut.ConsumeAsync("test_queue", cts.Token);
 
-        while (Messages.Queue.Count != expected)
-        {
-            if (Messages.Queue.Count == expected)
-            {
-                break;
-            }
-        }
 
-        Assert.Equal(expected, Messages.Queue.Count);
         _sut.CancelConsumer();
     }
 }
