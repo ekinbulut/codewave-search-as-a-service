@@ -1,4 +1,4 @@
-namespace Publisher;
+namespace DatabaseAdaptor;
 
 public class DatabaseOptions
 {
