@@ -19,10 +19,10 @@ public class Application
     {
         var mqOptions = _builder.Services.BuildServiceProvider().GetRequiredService<IOptions<RabbitMqOptions>>();
         Console.WriteLine($"MQ: ampq://{mqOptions.Value.Hostname}:{mqOptions.Value.Port}");
-        _builder.Services.AddSingleton<IRabbitMqBroker>(p => new RabbitMqBroker(mqOptions.Value.Username,mqOptions.Value.Password, mqOptions.Value.VirtualHost, mqOptions.Value.Hostname, mqOptions.Value.Port));
+        _builder.Services.AddSingleton<IRabbitMqBroker, RabbitMqBroker>();
 
         var dbOptions = _builder.Services.BuildServiceProvider().GetRequiredService<IOptions<DatabaseOptions>>();
-        Console.WriteLine($"Database: {dbOptions.Value.ConnectionString.Split('=')[1]}");
+        Console.WriteLine($"Database: {dbOptions.Value.ConnectionString?.Split('=')[1]}");
         _builder.Services.AddTransient<IAdaptor, SqlLiteAdaptor>(p => new SqlLiteAdaptor(dbOptions.Value.ConnectionString));
 
         _builder.Services.AddTransient<IPublisher, Publisher>();

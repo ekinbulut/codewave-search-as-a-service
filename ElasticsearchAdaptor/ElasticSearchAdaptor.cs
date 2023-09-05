@@ -6,30 +6,30 @@ namespace ElasticsearchAdaptor;
 public class ElasticSearchResponse
 {
     public int Code { get; set; }
-    public string Status { get; set; }
+    public string? Status { get; set; }
 }
 public class ElasticSearchAdaptor
 {
     private readonly IOptions<ElasticSearchOptions> _options;
-    private readonly ElasticsearchClientSettings _settings;
+    private readonly ElasticsearchClientSettings? _settings;
 
-    private ElasticsearchClient _client;
+    private ElasticsearchClient? _client;
 
-    public event Action<object,ElasticSearchResponse> AdaptorResponse;
+    public event Action<object, ElasticSearchResponse>? AdaptorResponse;
 
     public ElasticSearchAdaptor(IOptions<ElasticSearchOptions> options)
     {
         _options = options;
-        _settings = new ElasticsearchClientSettings(new Uri(_options.Value.Uri));
+        if (_options.Value.Uri != null) _settings = new ElasticsearchClientSettings(new Uri(_options.Value.Uri));
     }
 
-    private ElasticsearchClient Client
+    private ElasticsearchClient? Client
     {
         get
         {
             if (_client == null)
             {
-                _client = new ElasticsearchClient(_settings);
+                if (_settings != null) _client = new ElasticsearchClient(_settings);
             }
 
             return _client;
@@ -40,18 +40,18 @@ public class ElasticSearchAdaptor
     {
         if (enableDebugMode)
         {
-            _settings.EnableDebugMode();
+            _settings?.EnableDebugMode();
         }
         if (prettyJson)
         {
-            _settings.PrettyJson();
+            _settings?.PrettyJson();
         }
-        _settings.RequestTimeout(TimeSpan.FromMinutes(minutes));
+        _settings?.RequestTimeout(TimeSpan.FromMinutes(minutes));
     }
 
     public async Task IndexAsync(object data, string index)
     {
-        var response = await Client.IndexAsync(data, index);
+        var response = await Client?.IndexAsync(data, index)!;
         if (response.IsValidResponse)
         {
             AdaptorResponse?.Invoke(this, new ElasticSearchResponse(){

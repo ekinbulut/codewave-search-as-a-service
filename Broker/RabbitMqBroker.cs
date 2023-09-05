@@ -1,23 +1,26 @@
-﻿using RabbitMQ.Client;
+﻿using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 namespace Broker;
 
 public class RabbitMqBroker : IRabbitMqBroker
 {
-    private readonly string _username;
-    private readonly string _password;
-    private readonly string _virtualHost;
-    private readonly string _hostname;
+    private readonly string? _username;
+    private readonly string? _password;
+    private readonly string? _virtualHost;
+    private readonly string? _hostname;
     private readonly int _port;
 
-    private readonly ConnectionFactory _factory;
-    private IConnection _connection;
-    private IModel _channel;
+    private readonly ConnectionFactory? _factory;
+    private IConnection? _connection;
+    private IModel? _channel;
     
-    private string _consumerTag;
+    private string? _consumerTag;
+
+    private readonly IOptions<RabbitMqOptions>? _options;
     
-    public RabbitMqBroker(string username, string password, string virtualHost, string hostname, int port)
+    public RabbitMqBroker(string? username, string? password, string? virtualHost, string? hostname, int port)
     {
         this._username = username;
         this._password = password;
@@ -25,30 +28,49 @@ public class RabbitMqBroker : IRabbitMqBroker
         this._hostname = hostname;
         this._port = port;
 
-        _factory = new ConnectionFactory();
+        _factory = new ConnectionFactory
+        {
+            AutomaticRecoveryEnabled = true,
+            NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
+
+        };
     }
 
-    private IConnection Connection
+    public RabbitMqBroker(IOptions<RabbitMqOptions>? options)
+    {
+        _options = options;
+        _factory = new ConnectionFactory
+        {
+            AutomaticRecoveryEnabled = true,
+            NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
+        };
+    }
+
+    private IConnection? Connection
     {
         get
         {
-            _factory.UserName = _username;
-            _factory.Password = _password;
-            _factory.VirtualHost = _virtualHost;
-            _factory.HostName = _hostname;
-            _factory.Port = _port;
-            _connection = _factory.CreateConnection();
+            if (_factory != null)
+            {
+                _factory.UserName = string.IsNullOrEmpty(_username) ? _options?.Value.Username : _username;
+                _factory.Password = string.IsNullOrEmpty(_password) ? _options?.Value.Password : _password;
+                _factory.VirtualHost = string.IsNullOrEmpty(_virtualHost) ? _options?.Value.VirtualHost : _virtualHost;
+                _factory.HostName = string.IsNullOrEmpty(_hostname) ? _options?.Value.Hostname : _hostname;
+                if (_options != null) _factory.Port = _port == 0 ? _options.Value.Port : _port;
+                _connection = _factory.CreateConnection();
+            }
+
             return _connection;
         }
     }
 
-    private IModel Channel
+    private IModel? Channel
     {
         get
         {
             if (_channel == null)
             {
-                _channel = Connection.CreateModel();
+                _channel = Connection?.CreateModel();
             }
 
             return _channel;
@@ -59,9 +81,9 @@ public class RabbitMqBroker : IRabbitMqBroker
     {
         byte[] messageBodyBytes = System.Text.Encoding.UTF8.GetBytes(message);
         
-        Channel.ExchangeDeclare(exchange, ExchangeType.Direct);
-        Channel.QueueDeclare(queue, true, false, false, null);
-        Channel.QueueBind(queue, exchange, routingKey, null);
+        Channel.ExchangeDeclare(exchange, ExchangeType.Direct, true);
+        Channel?.QueueDeclare(queue, true, false, false, null);
+        Channel?.QueueBind(queue, exchange, routingKey, null);
         
         Channel.BasicPublish(exchange,routingKey, null,messageBodyBytes);
         
@@ -73,9 +95,9 @@ public class RabbitMqBroker : IRabbitMqBroker
         {
             byte[] messageBodyBytes = System.Text.Encoding.UTF8.GetBytes(message);
         
-            Channel.ExchangeDeclare(exchange, ExchangeType.Direct);
-            Channel.QueueDeclare(queue, true, false, false, null);
-            Channel.QueueBind(queue, exchange, routingKey, null);
+            Channel.ExchangeDeclare(exchange, ExchangeType.Direct, true);
+            Channel?.QueueDeclare(queue, true, false, false, null);
+            Channel?.QueueBind(queue, exchange, routingKey, null);
         
             Channel.BasicPublish(exchange,routingKey, null,messageBodyBytes);
 
@@ -91,7 +113,7 @@ public class RabbitMqBroker : IRabbitMqBroker
         {
             var body = ea.Body.ToArray();
             Messages.Queue.Enqueue(body);
-            Channel.BasicAck(ea.DeliveryTag, false);
+            Channel?.BasicAck(ea.DeliveryTag, false);
         };
 
         _consumerTag = Channel.BasicConsume(queue, false, consumer);
@@ -99,14 +121,14 @@ public class RabbitMqBroker : IRabbitMqBroker
 
     public Task ConsumeAsync(string queue, CancellationToken cancellationToken)
     {
-        _factory.DispatchConsumersAsync = true;
+        if (_factory != null) _factory.DispatchConsumersAsync = true;
 
         var consumer = new AsyncEventingBasicConsumer(Channel);
         consumer.Received += async (ch, ea) =>
         {
             var body = ea.Body.ToArray();
             Messages.Queue.Enqueue(body);
-            Channel.BasicAck(ea.DeliveryTag, false);
+            Channel?.BasicAck(ea.DeliveryTag, false);
             await Task.Yield();
         };
         _consumerTag = Channel.BasicConsume(queue, false, consumer);
@@ -115,12 +137,12 @@ public class RabbitMqBroker : IRabbitMqBroker
 
     public void CancelConsumer()
     {
-        _channel.BasicCancel(_consumerTag);
+        Channel?.BasicCancel(_consumerTag);
     }
 
     public void CloseConnections()
     {
-        Channel.Close();
-        Connection.Close();
+        Channel?.Close();
+        Connection?.Close();
     }
 }

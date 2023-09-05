@@ -5,7 +5,7 @@ namespace Tests;
 
 public class ElasticSearchAdaptorTests
 {
-    private ElasticSearchAdaptor _sut;
+    private readonly ElasticSearchAdaptor _sut;
 
     public ElasticSearchAdaptorTests()
     {
@@ -34,6 +34,6 @@ public class ElasticSearchAdaptorTests
     class TestIndex
     {
         public int Id { get; set; }
-        public string Value { get; set; }
+        public string? Value { get; set; }
     }
 }

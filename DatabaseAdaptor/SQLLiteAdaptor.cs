@@ -17,7 +17,7 @@ public class SqlLiteAdaptor : IAdaptor
 {
     private readonly SqliteConnection _connection;
     
-    public SqlLiteAdaptor(string connectionString)
+    public SqlLiteAdaptor(string? connectionString)
     {
         _connection = new SqliteConnection(connectionString);
     }
@@ -30,7 +30,7 @@ public class SqlLiteAdaptor : IAdaptor
             _connection.Open();
             result = true;
         }
-        catch (Exception e)
+        catch
         {
             throw new ConnectionException();
         }
