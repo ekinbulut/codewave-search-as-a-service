@@ -7,6 +7,7 @@ public class ElasticSearchResponse
 {
     public int Code { get; set; }
     public string? Status { get; set; }
+    public object? Data { get; set; }
 }
 
 public interface IElasticSearchAdaptor
@@ -62,20 +63,25 @@ public class ElasticSearchAdaptor : IElasticSearchAdaptor
         var response = await Client?.IndexAsync(data, index)!;
         if (response.IsValidResponse)
         {
-            AdaptorResponse?.Invoke(this, new ElasticSearchResponse(){
-                Code = Convert.ToInt32($"{response.ApiCallDetails.HttpStatusCode}"),
-                Status = $"{index} completed"
-            });
+            Response(response.ApiCallDetails.HttpStatusCode,$"{index} completed", data);
         }
         else
         {
             if (response.ElasticsearchServerError != null)
-                AdaptorResponse?.Invoke(this, new ElasticSearchResponse()
-                {
-                    Code = Convert.ToInt32($"{response.ElasticsearchServerError.Status}"),
-                    Status = $"{response.ElasticsearchServerError}"
-                });
+            {
+                Response(response.ElasticsearchServerError.Status, $"{response.ElasticsearchServerError}", data);
+            }
         }
+    }
+
+    private void Response(int? code, string status, object? data)
+    {
+        AdaptorResponse?.Invoke(this, new ElasticSearchResponse()
+        {
+            Code = Convert.ToInt32($"{code}"),
+            Status = $"{status}",
+            Data = data
+        });
     }
 
 }

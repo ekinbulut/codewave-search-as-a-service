@@ -17,11 +17,8 @@ public class StartupService : IHostedService
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.Log(LogLevel.Information, "Application started");
-
-        var task = _publisher.PublishAsync(cancellationToken);
-        Task.WaitAll(task);
         
-        return Task.CompletedTask;
+        return _publisher.PublishAsync(cancellationToken);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

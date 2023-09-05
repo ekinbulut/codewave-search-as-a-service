@@ -25,6 +25,8 @@ public class Application
         _builder.Services.AddSingleton<IRabbitMqBroker, RabbitMqBroker>();
         _builder.Services.AddTransient<IElasticSearchAdaptor, ElasticSearchAdaptor>();
 
+        _builder.Services.AddTransient<IIndexer, Indexer>();
+        
         _builder.Services.AddHostedService<StartupService>();
     }
     public void RegisterConfigs()
