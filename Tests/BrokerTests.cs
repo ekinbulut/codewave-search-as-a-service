@@ -1,3 +1,4 @@
+using System.Text;
 using Broker;
 
 namespace Tests;
@@ -33,21 +34,31 @@ public class BrokerTests
         _sut.CloseConnections();
     }
 
+    [Fact]
     public void Test_Consume()
     {
-        var expected = 3;
-
-        _sut.Consume("test_queue_async");
+        _sut.Consume("test_queue");
+        _sut.MessageReceived += delegate(byte[] bytes, ulong deliveryTag)
+        {
+            var body = Encoding.UTF8.GetString(bytes);
+            Assert.False(String.IsNullOrEmpty(body));
+            _sut.Ack(deliveryTag);
+        };
         _sut.CancelConsumer();
     }
     
+    [Fact]
     public async Task Test_Consume_Async()
     {
-        var expected = 3;
         CancellationTokenSource cts = new CancellationTokenSource();
-        await _sut.ConsumeAsync("test_queue", cts.Token);
-
-
+        _sut.MessageReceived += delegate(byte[] bytes, ulong deliveryTag)
+        {
+            var body = Encoding.UTF8.GetString(bytes);
+            Assert.False(String.IsNullOrEmpty(body));
+            _sut.Ack(deliveryTag);
+           
+        };
+        await _sut.ConsumeAsync("test_queue_async", cts.Token);
         _sut.CancelConsumer();
     }
 }
