@@ -20,7 +20,7 @@ public class RabbitMqBroker : IRabbitMqBroker
 
     private readonly IOptions<RabbitMqOptions>? _options;
 
-    public event Action<byte[]>? MessageReceived; 
+    public event Action<byte[], ulong>? MessageReceived; 
     
     public RabbitMqBroker(string? username, string? password, string? virtualHost, string? hostname, int port)
     {
@@ -114,8 +114,7 @@ public class RabbitMqBroker : IRabbitMqBroker
         consumer.Received += (ch, ea) =>
         {
             var body = ea.Body.ToArray();
-            MessageReceived?.Invoke(body);
-            Channel?.BasicAck(ea.DeliveryTag, false);
+            MessageReceived?.Invoke(body, ea.DeliveryTag);
         };
 
         _consumerTag = Channel.BasicConsume(queue, false, consumer);
@@ -129,8 +128,7 @@ public class RabbitMqBroker : IRabbitMqBroker
         consumer.Received += async (ch, ea) =>
         {
             var body = ea.Body.ToArray();
-            Channel?.BasicAck(ea.DeliveryTag, false);
-            MessageReceived?.Invoke(body);
+            MessageReceived?.Invoke(body, ea.DeliveryTag);
             await Task.Yield();
         };
         _consumerTag = Channel.BasicConsume(queue, false, consumer);
@@ -146,5 +144,10 @@ public class RabbitMqBroker : IRabbitMqBroker
     {
         Channel?.Close();
         Connection?.Close();
+    }
+
+    public void Ack(ulong deliveryTag)
+    {
+        Channel?.BasicAck(deliveryTag, false);
     }
 }

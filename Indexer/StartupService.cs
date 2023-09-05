@@ -40,7 +40,7 @@ public class StartupService : IHostedService
         _logger.Log(LogLevel.Information, $"Status: {response.Status} with code {response.Code}");
     }
 
-    private void RabbitMqBrokerOnMessageReceived(byte[] obj)
+    private void RabbitMqBrokerOnMessageReceived(byte[] obj, ulong deliveryTag)
     {
         var data = Encoding.UTF8.GetString(obj);
         var o = JsonConvert.DeserializeObject<dynamic>(data);
