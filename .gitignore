@@ -23,6 +23,8 @@
 
 .idea/.idea.SaaS/.idea/*
 
+.idea/*
+
 *.suo
 *.user
 .vs/
