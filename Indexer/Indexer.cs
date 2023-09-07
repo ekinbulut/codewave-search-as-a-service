@@ -1,5 +1,7 @@
 using System.Text;
 using Broker;
+using Contracts;
+using DatabaseAdaptor;
 using ElasticsearchAdaptor;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -36,7 +38,8 @@ public class Indexer : IIndexer
     private void ElasticSearchAdaptorOnAdaptorResponse(object arg1, ElasticSearchResponse response)
     {
         _logger.Log(LogLevel.Information, $"Status: {response.Status} with code {response.Code}");
-        
+        var data = (MessageContract)response.Data!;
+        _rabbitMqBroker.Ack(data.DeliveryTag);
         //TODO: retry
     }
 
@@ -45,13 +48,24 @@ public class Indexer : IIndexer
         _logger.Log(LogLevel.Information, $"Message received");
         
         var dataAsString = Encoding.UTF8.GetString(data);
-        var o = JsonConvert.DeserializeObject<dynamic>(dataAsString);
-
+        var messageContract = JsonConvert.DeserializeObject<MessageContract>(dataAsString);
+        messageContract.DeliveryTag = deliveryTag;
         // TODO: not working you have to try convert to data object
-        var task = _elasticSearchAdaptor.IndexAsync(o, "product_index");
-        task.Wait(CancellationToken.None);
         
-        _rabbitMqBroker.Ack(deliveryTag);
+        // This is a PROBLEM !!!!!!!
+        var databaseModel = (DatabaseModel)messageContract.Datas;
+
+        // Limit and index
+        foreach (var table in databaseModel.Tables)
+        {
+            if (table.Datas.Count > 100)
+            {
+                table.Datas = table.Datas.Take(100).Select(x => x).ToList();
+            }
+        }
+        
+        var task = _elasticSearchAdaptor.IndexAsync(messageContract, "product_index");
+        task.Wait(CancellationToken.None);
     }
 
     public Task ConsumeAsync(CancellationToken token)

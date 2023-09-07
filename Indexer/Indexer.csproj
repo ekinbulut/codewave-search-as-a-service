@@ -19,6 +19,8 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Broker\Broker.csproj" />
+      <ProjectReference Include="..\Contracts\Contracts.csproj" />
+      <ProjectReference Include="..\DatabaseAdaptor\DatabaseAdaptor.csproj" />
       <ProjectReference Include="..\ElasticsearchAdaptor\ElasticsearchAdaptor.csproj" />
     </ItemGroup>
 

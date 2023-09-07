@@ -1,6 +1,8 @@
 using Broker;
+using Contracts;
 using DatabaseAdaptor;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Publisher;
 
@@ -24,9 +26,14 @@ public class Publisher : IPublisher
             if (_adaptor.Connect())
             {
                 _logger.Log(LogLevel.Information, "Adaptor connected");
-                var data = _adaptor.GetSchemaAndData();
+                var data = _adaptor.GetDatabaseModel();
+                var message = new MessageContract
+                {
+                    Datas = data
+                };
+                var serializeObject = JsonConvert.SerializeObject(message);
                 _logger.Log(LogLevel.Information, "Data fetched");
-                await _rabbitMqBroker.SendAsync("publisher_exchange", "publisher_queue", "", data, token);
+                await _rabbitMqBroker.SendAsync("publisher_exchange", "publisher_queue", "", serializeObject, token);
                 _logger.Log(LogLevel.Information, "Data published");
                 _rabbitMqBroker.CloseConnections();
                 _logger.Log(LogLevel.Information, "Connection closed");

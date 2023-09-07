@@ -1,4 +1,6 @@
 using DatabaseAdaptor;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Tests;
 
@@ -8,7 +10,7 @@ public class SqliteDataAdaptorUnitTests
 
     public SqliteDataAdaptorUnitTests()
     {
-        _sut = new SqlLiteAdaptor("Data Source=test.db");
+        _sut = new SqlLiteAdaptor("Data Source=/Users/ekin/Developer/SaaS/test.db");
     }
     
     
@@ -26,6 +28,20 @@ public class SqliteDataAdaptorUnitTests
         {
             var actual = _sut.GetSchemaAndData();
             Assert.False(String.IsNullOrEmpty(actual));
+        }
+    }
+
+    [Fact]
+    public void Test_DataModelConversion()
+    {
+        if (_sut.Connect())
+        {
+            var dataStr = _sut.GetSchemaAndData();
+
+          
+            var actual = JsonConvert.DeserializeObject<DatabaseModel>(dataStr);
+
+            Assert.IsType<DatabaseModel>(actual);
         }
     }
 }

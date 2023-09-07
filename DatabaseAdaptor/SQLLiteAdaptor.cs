@@ -10,7 +10,7 @@ public interface IAdaptor
 {
     bool Connect();
     string GetSchemaAndData();
-    List<Dictionary<string, object>> GetDataFromTable(string tableName);
+    DatabaseModel GetDatabaseModel();
 }
 
 public class SqlLiteAdaptor : IAdaptor
@@ -39,8 +39,7 @@ public class SqlLiteAdaptor : IAdaptor
 
     public string GetSchemaAndData()
     {
-        List<Dictionary<string, object>> tablesData = new List<Dictionary<string, object>>();
-        
+        var databaseModel = new DatabaseModel();
         using (var schemaCmd = _connection.CreateCommand())
         {
             schemaCmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table'";
@@ -49,23 +48,49 @@ public class SqlLiteAdaptor : IAdaptor
                 while (reader.Read())
                 {
                     string tableName = reader.GetString(0);
-                    Dictionary<string, object> tableData = new Dictionary<string, object>
+                    
+                    databaseModel.Tables.Add(new Table()
                     {
-                        { "TableName", tableName },
-                        { "Data", GetDataFromTable(tableName) }
-                    };
-                    tablesData.Add(tableData);
+                        TableName =  tableName,
+                        Datas = GetDataFromTable(tableName)
+                    });
                 }
             }
         }
         
-        return JsonConvert.SerializeObject(tablesData);
+        return JsonConvert.SerializeObject(databaseModel);
     }
 
-    public List<Dictionary<string, object>> GetDataFromTable(string tableName)
+    public DatabaseModel GetDatabaseModel()
+    {
+        var databaseModel = new DatabaseModel();
+        using (var schemaCmd = _connection.CreateCommand())
+        {
+            schemaCmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table'";
+            using (var reader = schemaCmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    string tableName = reader.GetString(0);
+                    
+                    databaseModel.Tables.Add(new Table()
+                    {
+                        TableName =  tableName,
+                        Datas = GetDataFromTable(tableName)
+                    });
+                }
+            }
+        }
+
+        return databaseModel;
+    }
+
+    private List<Data> GetDataFromTable(string tableName)
     {
         List<Dictionary<string, object>> tableData = new List<Dictionary<string, object>>();
 
+        var datas = new List<Data>();
+        
         using (var dataCmd = _connection.CreateCommand())
         {
             dataCmd.CommandText = $"SELECT * FROM {tableName}";
@@ -73,16 +98,14 @@ public class SqlLiteAdaptor : IAdaptor
             {
                 while (dataReader.Read())
                 {
-                    Dictionary<string, object> rowData = new Dictionary<string, object>();
                     for (int i = 0; i < dataReader.FieldCount; i++)
                     {
-                        rowData[dataReader.GetName(i)] = dataReader.GetValue(i);
+                        datas.Add(new Data(dataReader.GetName(i),dataReader.GetValue(i)));
                     }
-                    tableData.Add(rowData);
                 }
             }
         }
 
-        return tableData;
+        return datas;
     }
 }

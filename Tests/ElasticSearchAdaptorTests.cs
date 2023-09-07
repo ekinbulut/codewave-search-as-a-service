@@ -19,15 +19,65 @@ public class ElasticSearchAdaptorTests
     [Fact]
     public async Task Test_Index()
     {
-        _sut.AdaptorResponse += (o, response) =>
+        /*
+         * {
+           "DeliveryTag": 0,
+           "Datas": [
+                       {
+                       "TableName": "DEPARTMENT",
+                       "Data": [
+                       {
+                           "ID": 1,
+                           "DEPT": "test",
+                           "EMP_ID": 345
+                       },
+                       {
+                           "ID": 2,
+                           "DEPT": "test2",
+                           "EMP_ID": 34
+                       }
+                    ]
+           }
+         */
+
+        var datas = new List<Dictionary<string, object>>();
+        var columns = new List<Dictionary<string, object>>();
+        
+        columns.Add(new Dictionary<string, object>()
         {
-            Assert.Equal(200, response.Code);
+            {"ID", 1},
+            {"DEPT","test"},
+            {"EMP_ID",345}
+        });
+        
+        columns.Add(new Dictionary<string, object>()
+        {
+            {"ID", 2},
+            {"DEPT","test2"},
+            {"EMP_ID",34}
+        });
+        
+        datas.Add(new Dictionary<string, object>()
+        {
+            {"TableName","Department"},
+            {"Data", columns}
+        });
+
+        var data = new
+        {
+            DeliveryTag = 0,
+            Datas = datas
         };
         
-        await _sut.IndexAsync(new TestIndex()
+        _sut.AdaptorResponse += (o, response) =>
         {
-            Id = 100,
-            Value = "Test data value"
+            Assert.Equal(201, response.Code);
+        };
+        
+        await _sut.IndexAsync(new 
+        {
+            Id = 1,
+            Value = data
         }, "idx_test");
     }
 
