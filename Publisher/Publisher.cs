@@ -3,6 +3,8 @@ using Contracts;
 using DatabaseAdaptor;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Diagnostics.Contracts;
 
 namespace Publisher;
 
@@ -37,14 +39,9 @@ public class Publisher : IPublisher
             {
                 _logger.Log(LogLevel.Information, "Adaptor connected");
                 var contracts = GetMessageContracts();
-                foreach (var contract in contracts)
-                {
-                    var serializeObject = SerializeObject(contract);
-                    await Publish(serializeObject, token);
-                }
+                await Publish(contracts, token);
 
-                _rabbitMqBroker.CloseConnections();
-                _logger.Log(LogLevel.Information, "Connection closed");
+
             }
         }
         catch (Exception e)
@@ -64,23 +61,21 @@ public class Publisher : IPublisher
         var data = _adaptor.GetDatabaseModel();
         foreach (var item in data.Tables)
         {
-            var newData = new DatabaseModel();
-            newData.Tables = new List<Table>();
-            
             if (item.Datas.Count > 100000)
             {
                 var counter = item.Datas.Count;
-                _logger.LogInformation($"Data count: {counter}, table: {item.TableName}");
                 var skip = 0;
 
                 while (counter > 0)
                 {
+                    var newData = new DatabaseModel();
+                    newData.Tables = new List<Table>();
                     var batch = item.Datas.Skip(skip).Take(100000).ToList();
                     newData.Tables.Add(new Table { Datas = batch, TableName = item.TableName });
                     counter -= 100000;
                     skip += 100000;
+                    datas.Add(newData);
                 }
-                datas.Add(newData);
             }else
             {
                 datas.Add(new DatabaseModel { Tables = new List<Table> { new Table { Datas = item.Datas, TableName = item.TableName } } });
@@ -107,8 +102,20 @@ public class Publisher : IPublisher
         return messages;
     }
 
-    private async Task Publish(string message, CancellationToken cancellationToken)
+    private async Task Publish(ICollection<MessageContract> messages, CancellationToken cancellationToken)
     {
-        await _rabbitMqBroker.SendAsync("publisher_exchange", "publisher_queue", "", message , cancellationToken);
+        var messageCount = messages.Count;
+        int index = 0;
+
+        while (messageCount > 0)
+        {
+            var serializeObject = SerializeObject(messages.ToList()[index]); // not optimized
+            await _rabbitMqBroker.SendAsync("publisher_exchange", "publisher_queue", "", serializeObject, cancellationToken);
+            messageCount--;
+            index++;
+        }
+
+        _rabbitMqBroker.CloseConnections();
+        _logger.Log(LogLevel.Information, "Connection closed");
     }
 }
