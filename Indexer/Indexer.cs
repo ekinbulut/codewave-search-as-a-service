@@ -53,7 +53,7 @@ public class Indexer : IIndexer
         // TODO: not working you have to try convert to data object
         
         // This is a PROBLEM !!!!!!!
-        var databaseModel = (DatabaseModel)messageContract.Datas;
+        var databaseModel = (DatabaseModel)messageContract.Data;
 
         // Limit and index
         foreach (var table in databaseModel.Tables)

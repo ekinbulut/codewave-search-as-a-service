@@ -20,8 +20,9 @@ public class RabbitMqBroker : IRabbitMqBroker
 
     private readonly IOptions<RabbitMqOptions>? _options;
 
-    public event Action<byte[], ulong>? MessageReceived; 
-    
+    public event Action<byte[], ulong>? MessageReceived;
+    public event Action<Guid>? MessageSent;
+
     public RabbitMqBroker(string? username, string? password, string? virtualHost, string? hostname, int port)
     {
         this._username = username;
@@ -88,7 +89,7 @@ public class RabbitMqBroker : IRabbitMqBroker
         Channel?.QueueBind(queue, exchange, routingKey, null);
         
         Channel.BasicPublish(exchange,routingKey, null,messageBodyBytes);
-        
+        MessageSent?.Invoke(Guid.NewGuid());
     }
     
     public async Task SendAsync(string exchange, string queue, string routingKey, string message, CancellationToken cancellationToken = new CancellationToken())
@@ -102,7 +103,7 @@ public class RabbitMqBroker : IRabbitMqBroker
             Channel?.QueueBind(queue, exchange, routingKey, null);
         
             Channel.BasicPublish(exchange,routingKey, null,messageBodyBytes);
-
+            MessageSent?.Invoke(Guid.NewGuid());
         }, cancellationToken);
         
         await task;
