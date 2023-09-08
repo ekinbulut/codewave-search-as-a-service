@@ -23,10 +23,16 @@ public class Application
 
         var dbOptions = _builder.Services.BuildServiceProvider().GetRequiredService<IOptions<DatabaseOptions>>();
         Console.WriteLine($"Database: {dbOptions.Value.ConnectionString?.Split('=')[1]}");
-        _builder.Services.AddTransient<IAdaptor, SqlLiteAdaptor>(p => new SqlLiteAdaptor(dbOptions.Value.ConnectionString));
 
+        var pbOptions = _builder.Services.BuildServiceProvider().GetRequiredService<IOptions<PublisherOptions>>();
+        Console.WriteLine($"Exchange: {pbOptions.Value.Exchange}");
+        Console.WriteLine($"Queue: {pbOptions.Value.Queue}");
+        Console.WriteLine($"Batch: {pbOptions.Value.BatchSize}");
+
+
+
+        _builder.Services.AddTransient<IAdaptor, SqlLiteAdaptor>(p => new SqlLiteAdaptor(dbOptions.Value.ConnectionString));
         _builder.Services.AddTransient<IPublisher, Publisher>();
-        
         _builder.Services.AddHostedService<StartupService>();
     }
     public void RegisterConfigs()
@@ -39,6 +45,8 @@ public class Application
 
         _builder.Services.Configure<RabbitMqOptions>(_builder.Configuration.GetSection(nameof(RabbitMqOptions)));
         _builder.Services.Configure<DatabaseOptions>(_builder.Configuration.GetSection(nameof(DatabaseOptions)));
+        _builder.Services.Configure<PublisherOptions>(_builder.Configuration.GetSection(nameof(PublisherOptions)));
+
 
     }
 
