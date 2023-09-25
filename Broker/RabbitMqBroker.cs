@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Threading.Tasks;
 
 namespace Broker;
 
@@ -82,31 +83,39 @@ public class RabbitMqBroker : IRabbitMqBroker
 
     public void Send(string exchange, string queue, string routingKey, string message)
     {
-        byte[] messageBodyBytes = System.Text.Encoding.UTF8.GetBytes(message);
-        
-        Channel.ExchangeDeclare(exchange, ExchangeType.Direct, true);
-        Channel?.QueueDeclare(queue, true, false, false, null);
-        Channel?.QueueBind(queue, exchange, routingKey, null);
-        
-        Channel.BasicPublish(exchange,routingKey, null,messageBodyBytes);
-        MessageSent?.Invoke(Guid.NewGuid());
+        lock(ObjectLock.Self)
+        {
+            byte[] messageBodyBytes = System.Text.Encoding.UTF8.GetBytes(message);
+
+            Channel.ExchangeDeclare(exchange, ExchangeType.Direct, true);
+            Channel?.QueueDeclare(queue, true, false, false, null);
+            Channel?.QueueBind(queue, exchange, routingKey, null);
+
+            Channel.BasicPublish(exchange, routingKey, null, messageBodyBytes);
+            MessageSent?.Invoke(Guid.NewGuid());
+        }
     }
     
     public async Task SendAsync(string exchange, string queue, string routingKey, string message, CancellationToken cancellationToken = new CancellationToken())
     {
-        var task = Task.Factory.StartNew(() =>
+        Task task;
+        lock (ObjectLock.Self)
         {
-            byte[] messageBodyBytes = System.Text.Encoding.UTF8.GetBytes(message);
-        
-            Channel.ExchangeDeclare(exchange, ExchangeType.Direct, true);
-            Channel?.QueueDeclare(queue, true, false, false, null);
-            Channel?.QueueBind(queue, exchange, routingKey, null);
-        
-            Channel.BasicPublish(exchange,routingKey, null,messageBodyBytes);
-            MessageSent?.Invoke(Guid.NewGuid());
-        }, cancellationToken);
-        
+            task = Task.Factory.StartNew(() =>
+            {
+                byte[] messageBodyBytes = System.Text.Encoding.UTF8.GetBytes(message);
+
+                Channel.ExchangeDeclare(exchange, ExchangeType.Direct, true);
+                Channel?.QueueDeclare(queue, true, false, false, null);
+                Channel?.QueueBind(queue, exchange, routingKey, null);
+
+                Channel.BasicPublish(exchange, routingKey, null, messageBodyBytes);
+                MessageSent?.Invoke(Guid.NewGuid());
+            }, cancellationToken);
+        }
+
         await task;
+
     }
 
     public void Consume(string queue)
