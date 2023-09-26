@@ -39,7 +39,7 @@ public class Application
 
         _builder.Services.Configure<RabbitMqOptions>(_builder.Configuration.GetSection(nameof(RabbitMqOptions)));
         _builder.Services.Configure<ElasticSearchOptions>(_builder.Configuration.GetSection(nameof(ElasticSearchOptions)));
-
+        _builder.Services.Configure<IndexerOptions>(_builder.Configuration.GetSection(nameof(IndexerOptions)));
     }
 
     public void DisplayInfo()

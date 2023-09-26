@@ -4,6 +4,7 @@ using Contracts;
 using DatabaseAdaptor;
 using ElasticsearchAdaptor;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Indexer;
@@ -19,56 +20,59 @@ public class Indexer : IIndexer
     private readonly ILogger _logger;
     private readonly IRabbitMqBroker _rabbitMqBroker;
     private readonly IElasticSearchAdaptor _elasticSearchAdaptor;
+    private readonly IOptions<IndexerOptions> _options;
 
-    public Indexer(ILogger<Indexer> logger, IRabbitMqBroker rabbitMqBroker, IElasticSearchAdaptor elasticSearchAdaptor)
+    public Indexer(ILogger<Indexer> logger, IRabbitMqBroker rabbitMqBroker, IElasticSearchAdaptor elasticSearchAdaptor, IOptions<IndexerOptions> options)
     {
         _logger = logger;
         _rabbitMqBroker = rabbitMqBroker;
         _elasticSearchAdaptor = elasticSearchAdaptor;
-        
+        _options = options;
+
         RegisterEventListeners();
     }
 
     private void RegisterEventListeners()
     {
-        _rabbitMqBroker.MessageReceived += RabbitMqBrokerOnMessageReceived;
-        _elasticSearchAdaptor.AdaptorResponse += ElasticSearchAdaptorOnAdaptorResponse;
+        _rabbitMqBroker.MessageReceived += MessageReceivedEvent;
+        _elasticSearchAdaptor.IndexResponse += IndexResponseEvent;
     }
 
-    private void ElasticSearchAdaptorOnAdaptorResponse(object arg1, ElasticSearchResponse response)
+    private void IndexResponseEvent(object arg1, ElasticSearchResponse response)
     {
         _logger.Log(LogLevel.Information, $"Status: {response.Status} with code {response.Code}");
-        var data = JsonConvert.DeserializeObject<MessageContract>(JsonConvert.SerializeObject(response.Data));
+        var data = JsonConvert.DeserializeObject<DatabaseModel>(JsonConvert.SerializeObject(response.Data));
         _rabbitMqBroker.Ack(data.DeliveryTag);
-        //TODO: retry
     }
 
-    private void RabbitMqBrokerOnMessageReceived(byte[] data, ulong deliveryTag)
+    private void MessageReceivedEvent(byte[] data, ulong deliveryTag)
     {
         _logger.Log(LogLevel.Information, $"Message received");
         
         var dataAsString = Encoding.UTF8.GetString(data);
         var messageContract = JsonConvert.DeserializeObject<MessageContract>(dataAsString);
-        messageContract.DeliveryTag = deliveryTag;
+        if (messageContract != null) Index(messageContract, deliveryTag);
+    }
 
+    private void Index(MessageContract messageContract, ulong deliveryTag)
+    {
         try
         {
-
             var databaseModel = JsonConvert.DeserializeObject<DatabaseModel>(JsonConvert.SerializeObject(messageContract.Data));
-            var task = _elasticSearchAdaptor.IndexAsync(databaseModel, "product_index");
+            if (databaseModel == null) return;
+            databaseModel.DeliveryTag = deliveryTag;
+            var task = _elasticSearchAdaptor.IndexAsync(databaseModel, _options.Value.Index);
             task.Wait(CancellationToken.None);
-
         }
         catch (Exception error)
         {
-            _logger.LogError(error.ToString(), error);
+            _logger.Log(LogLevel.Error, error, error.ToString());
         }
-
     }
 
     public Task ConsumeAsync(CancellationToken token)
     {
-        return _rabbitMqBroker.ConsumeAsync("publisher_queue", token);
+        return _rabbitMqBroker.ConsumeAsync(_options.Value.Queue, token);
     }
 
     public Task StopAsync(CancellationToken token)

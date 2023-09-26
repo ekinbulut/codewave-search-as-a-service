@@ -69,7 +69,7 @@ public class ElasticSearchAdaptorTests
             Datas = datas
         };
         
-        _sut.AdaptorResponse += (o, response) =>
+        _sut.IndexResponse += (o, response) =>
         {
             Assert.Equal(201, response.Code);
         };

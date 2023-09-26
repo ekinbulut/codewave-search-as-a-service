@@ -12,7 +12,7 @@ public class ElasticSearchResponse
 
 public interface IElasticSearchAdaptor
 {
-    event Action<object, ElasticSearchResponse>? AdaptorResponse;
+    event Action<object, ElasticSearchResponse>? IndexResponse;
     void ConfigureSettings(bool enableDebugMode = false, bool prettyJson = false, int minutes = 2);
     Task IndexAsync(object data, string index);
 }
@@ -24,7 +24,7 @@ public class ElasticSearchAdaptor : IElasticSearchAdaptor
 
     private ElasticsearchClient? _client;
 
-    public event Action<object, ElasticSearchResponse>? AdaptorResponse;
+    public event Action<object, ElasticSearchResponse>? IndexResponse;
 
     public ElasticSearchAdaptor(IOptions<ElasticSearchOptions> options)
     {
@@ -76,7 +76,7 @@ public class ElasticSearchAdaptor : IElasticSearchAdaptor
 
     private void Response(int? code, string status, object? data)
     {
-        AdaptorResponse?.Invoke(this, new ElasticSearchResponse()
+        IndexResponse?.Invoke(this, new ElasticSearchResponse()
         {
             Code = Convert.ToInt32($"{code}"),
             Status = $"{status}",

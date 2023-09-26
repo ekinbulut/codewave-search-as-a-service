@@ -5,6 +5,7 @@ namespace DatabaseAdaptor;
 public class DatabaseModel
 {
     public List<Table> Tables { get; set; }
+    public ulong DeliveryTag { get; set; }
 
     public DatabaseModel()
     {
