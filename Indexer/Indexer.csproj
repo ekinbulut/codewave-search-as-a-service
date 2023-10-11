@@ -21,7 +21,7 @@
       <ProjectReference Include="..\Broker\Broker.csproj" />
       <ProjectReference Include="..\Contracts\Contracts.csproj" />
       <ProjectReference Include="..\DatabaseAdaptor\DatabaseAdaptor.csproj" />
-      <ProjectReference Include="..\ElasticsearchAdaptor\ElasticsearchAdaptor.csproj" />
+      <ProjectReference Include="..\ElasticsearchAdaptor\SearchAdaptor.csproj" />
     </ItemGroup>
 
     <ItemGroup>

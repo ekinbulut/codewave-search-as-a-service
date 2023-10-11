@@ -1,16 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseAdaptor", "DatabaseAdaptor\DatabaseAdaptor.csproj", "{826586F1-7973-4849-83CE-2D14927CE531}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34031.279
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseAdaptor", "DatabaseAdaptor\DatabaseAdaptor.csproj", "{826586F1-7973-4849-83CE-2D14927CE531}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{4120615E-7E0E-4250-B430-F68F3CCA94D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{4120615E-7E0E-4250-B430-F68F3CCA94D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Indexer", "Indexer\Indexer.csproj", "{A7B5C38F-809E-4FB3-B9A8-C38930A164ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Indexer", "Indexer\Indexer.csproj", "{A7B5C38F-809E-4FB3-B9A8-C38930A164ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Publisher", "Publisher\Publisher.csproj", "{1FA17E03-354C-4E57-9D25-B947AF304BBF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Publisher", "Publisher\Publisher.csproj", "{1FA17E03-354C-4E57-9D25-B947AF304BBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElasticsearchAdaptor", "ElasticsearchAdaptor\ElasticsearchAdaptor.csproj", "{F2CB1D01-98DC-432C-90F4-04F5F2175E03}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchAdaptor", "ElasticsearchAdaptor\SearchAdaptor.csproj", "{F2CB1D01-98DC-432C-90F4-04F5F2175E03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Broker", "Broker\Broker.csproj", "{3EA4A822-7EB1-4C69-A586-5595FDF5384C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Broker", "Broker\Broker.csproj", "{3EA4A822-7EB1-4C69-A586-5595FDF5384C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{41DF3368-3A66-458B-B865-8B1ED98B2D7E}"
 EndProject
@@ -18,9 +21,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Adaptors", "Adaptors", "{E6
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{8A99FFBA-8EA9-40EE-9598-BFCB7FC7A312}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Search.Api", "Search.Api\Search.Api.csproj", "{B86EDE2D-9C89-442C-9161-14E37FC6342C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.Api", "Search.Api\Search.Api.csproj", "{B86EDE2D-9C89-442C-9161-14E37FC6342C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts", "Contracts\Contracts.csproj", "{61000115-853F-4B26-86FB-BEC6768DBE90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contracts", "Contracts\Contracts.csproj", "{61000115-853F-4B26-86FB-BEC6768DBE90}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,12 +64,15 @@ Global
 		{61000115-853F-4B26-86FB-BEC6768DBE90}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61000115-853F-4B26-86FB-BEC6768DBE90}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{826586F1-7973-4849-83CE-2D14927CE531} = {E6D1D436-253E-446E-B916-CB4243881BA0}
+		{4120615E-7E0E-4250-B430-F68F3CCA94D9} = {8A99FFBA-8EA9-40EE-9598-BFCB7FC7A312}
 		{A7B5C38F-809E-4FB3-B9A8-C38930A164ED} = {41DF3368-3A66-458B-B865-8B1ED98B2D7E}
 		{1FA17E03-354C-4E57-9D25-B947AF304BBF} = {41DF3368-3A66-458B-B865-8B1ED98B2D7E}
-		{826586F1-7973-4849-83CE-2D14927CE531} = {E6D1D436-253E-446E-B916-CB4243881BA0}
 		{F2CB1D01-98DC-432C-90F4-04F5F2175E03} = {E6D1D436-253E-446E-B916-CB4243881BA0}
-		{4120615E-7E0E-4250-B430-F68F3CCA94D9} = {8A99FFBA-8EA9-40EE-9598-BFCB7FC7A312}
 		{B86EDE2D-9C89-442C-9161-14E37FC6342C} = {41DF3368-3A66-458B-B865-8B1ED98B2D7E}
 	EndGlobalSection
 EndGlobal
